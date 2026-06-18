@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MolCraft — 自主科研智能体</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/static/css/style.css?v=47" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+/* ── Auth page styles ── */
+#auth-page { display:none; min-height:100vh; background:var(--lbg); align-items:center; justify-content:center; position:relative; overflow:hidden; font-family:var(--font-sans); }
+#auth-page.active { display:flex; }
+.auth-bg { position:absolute; inset:0; pointer-events:none; z-index:0; }
+.auth-card {
+  position:relative; z-index:1;
+  background:var(--lcard);
+  border:1px solid var(--lborder);
+  border-radius:20px;
+  padding:44px 40px 40px;
+  width:420px; max-width:90vw;
+  box-shadow:0 4px 32px rgba(0,0,0,0.06), 0 1px 0 rgba(0,0,0,0.04);
+  overflow:hidden;
+}
+/* Top accent glow */
+.auth-card::before {
+  content:''; position:absolute; top:0; left:40px; right:40px;
+  height:2px;
+  background:linear-gradient(90deg, transparent, var(--laccent), transparent);
+  opacity:0.5;
+}
+.auth-logo {
+  width:44px; height:44px; color:var(--laccent);
+  margin-bottom:20px;
+}
+.auth-logo svg { width:100%; height:100%; }
+.auth-card h2 {
+  font-family:var(--font-display); font-size:1.75rem; font-weight:700;
+  margin:0 0 4px; color:var(--ltext); letter-spacing:-0.01em;
+}
+.auth-card .auth-sub { color:var(--ltext-muted); font-size:0.9rem; margin-bottom:32px; }
+.auth-card label { display:block; font-size:0.8rem; color:var(--ltext-muted); margin-bottom:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+.auth-card input {
+  width:100%; padding:12px 16px;
+  border:1.5px solid var(--lborder);
+  border-radius:10px;
+  background:var(--lbg);
+  color:var(--ltext);
+  font-size:0.95rem; font-family:var(--font-sans);
+  margin-bottom:20px; box-sizing:border-box;
+  transition:all 0.2s;
+}
+.auth-card input:focus {
+  outline:none; border-color:var(--laccent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+  background:var(--lcard);
+}
+.auth-card .btn-auth {
+  width:100%; padding:13px; border:none; border-radius:10px;
+  background:var(--ltext); color:var(--lcard);
+  font-size:1rem; font-weight:600; font-family:var(--font-sans);
+  cursor:pointer; transition:all 0.2s;
+  margin-top:4px;
+}
+.auth-card .btn-auth:hover { background:var(--laccent); color:#fff; transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+.auth-card .btn-auth:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+.auth-toggle { text-align:center; margin-top:22px; font-size:0.85rem; color:var(--ltext-muted); }
+.auth-toggle a { color:var(--laccent); cursor:pointer; text-decoration:none; font-weight:600; margin-left:4px; }
+.auth-toggle a:hover { text-decoration:underline; }
+.auth-error { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); color:#ef4444; padding:12px 16px; border-radius:10px; margin-bottom:18px; font-size:0.85rem; display:none; }
+.auth-success { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); color:#10b981; padding:12px 16px; border-radius:10px; margin-bottom:18px; font-size:0.85rem; display:none; }
+#register-form { display:none; }
+</style>
+</head>
+<body>
+<div id="loading-screen">
+<div class="loader"><div class="loader-ring"><div class="loader-dot"></div></div><div class="loader-text">MolCraft</div><div class="loader-sub">科研 Agent 启动中...</div></div>
+</div>
+
+<!-- ── Auth Page ── -->
+<div id="auth-page">
+  <div class="auth-bg">
+    <div class="hero-gradient hero-grad-1"></div>
+    <div class="hero-gradient hero-grad-2"></div>
+    <div class="hero-gradient hero-grad-3"></div>
+    <div class="hero-mesh"></div>
+    <div class="hero-particle hp-1"></div>
+    <div class="hero-particle hp-2"></div>
+    <div class="hero-particle hp-3"></div>
+    <div class="hero-particle hp-4"></div>
+    <div class="hero-particle hp-5"></div>
+    <div class="hero-particle hp-6"></div>
+    <div class="hero-particle hp-7"></div>
+    <div class="hero-particle hp-8"></div>
+    <div class="hero-particle hp-9"></div>
+    <div class="hero-particle hp-10"></div>
+    <div class="hero-float-ring hfr-1"></div>
+    <div class="hero-float-ring hfr-2"></div>
+  </div>
+<div class="auth-card">
+<div class="auth-logo">
+  <svg viewBox="0 0 48 48" fill="none">
+    <polygon points="24,4 41.3,14 41.3,34 24,44 6.7,34 6.7,14" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="24" y1="4" x2="41.3" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="24" y1="4" x2="6.7" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="6.7" y1="14" x2="41.3" y2="14" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><circle cx="24" cy="24" r="3" fill="currentColor"/><circle cx="24" cy="10" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="18" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="24" cy="38" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="18" r="1.3" fill="currentColor" opacity="0.7"/>
+    <path d="M18 3v4M18 29v4M3 18h4M29 18h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+  </svg>
+</div>
+<h2 id="auth-title">欢迎回来</h2>
+<div class="auth-sub" id="auth-sub">登录你的 MolCraft 账户</div>
+<div class="auth-error" id="auth-error"></div>
+<div class="auth-success" id="auth-success"></div>
+<form id="login-form" onsubmit="handleLogin(event)">
+<label>邮箱</label><input type="email" id="login-email" placeholder="your@email.com" required autocomplete="email" />
+<label>密码</label><input type="password" id="login-password" placeholder="输入密码" required minlength="6" autocomplete="current-password" />
+<button type="submit" class="btn-auth" id="login-btn">登录</button>
+</form>
+<form id="register-form" onsubmit="handleRegister(event)">
+<label>昵称</label><input type="text" id="reg-name" placeholder="你的名字" required autocomplete="name" />
+<label>邮箱</label><input type="email" id="reg-email" placeholder="your@email.com" required autocomplete="email" />
+<label>密码</label><input type="password" id="reg-password" placeholder="至少6位字符" required minlength="6" autocomplete="new-password" />
+<button type="submit" class="btn-auth" id="reg-btn">注册</button>
+</form>
+<div class="auth-toggle">
+<span id="toggle-text">还没有账户？</span> <a id="toggle-link" onclick="toggleAuth()">立即注册</a>
+</div>
+</div>
+</div>
+
+<div id="landing-page" class="landing-light">
+  <!-- Navbar -->
+  <nav class="landing-nav" id="landing-nav">
+    <div class="landing-nav-inner">
+      <div class="nav-brand">
+        <svg class="nav-logo-icon" viewBox="0 0 48 48" fill="none">
+          <polygon points="24,4 41.3,14 41.3,34 24,44 6.7,34 6.7,14" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="24" y1="4" x2="41.3" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="24" y1="4" x2="6.7" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="6.7" y1="14" x2="41.3" y2="14" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><circle cx="24" cy="24" r="3" fill="currentColor"/><circle cx="24" cy="10" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="18" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="24" cy="38" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="18" r="1.3" fill="currentColor" opacity="0.7"/>
+          <path d="M18 3v4M18 29v4M3 18h4M29 18h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-brand-text">MolCraft</span>
+      </div>
+      <div class="nav-links">
+        <a href="#features">核心能力</a>
+        <a href="#process">研究流程</a>
+        <a href="#cta">开始使用</a>
+        <a href="#about">关于</a>
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn-outline" onclick="showAuth('login')">登录</button>
+        <button class="nav-btn-solid" onclick="showAuth('register')">注册 <span class="nav-btn-arrow">→</span></button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="landing-hero">
+    <div class="hero-bg">
+      <div class="hero-gradient hero-grad-1"></div>
+      <div class="hero-gradient hero-grad-2"></div>
+      <div class="hero-gradient hero-grad-3"></div>
+      <div class="hero-mesh"></div>
+      <!-- Floating particles -->
+      <div class="hero-particle hp-1"></div>
+      <div class="hero-particle hp-2"></div>
+      <div class="hero-particle hp-3"></div>
+      <div class="hero-particle hp-4"></div>
+      <div class="hero-particle hp-5"></div>
+      <div class="hero-particle hp-6"></div>
+      <div class="hero-particle hp-7"></div>
+      <div class="hero-particle hp-8"></div>
+      <div class="hero-particle hp-9"></div>
+      <div class="hero-particle hp-10"></div>
+      <div class="hero-particle hp-11"></div>
+      <div class="hero-particle hp-12"></div>
+      <div class="hero-particle hp-13"></div>
+      <div class="hero-particle hp-14"></div>
+      <div class="hero-particle hp-15"></div>
+      <div class="hero-particle hp-16"></div>
+      <div class="hero-particle hp-17"></div>
+      <div class="hero-particle hp-18"></div>
+      <!-- Floating rings -->
+      <div class="hero-float-ring hfr-1"></div>
+      <div class="hero-float-ring hfr-2"></div>
+      <!-- Connection lines -->
+      <div class="hero-line hl-1"></div>
+      <div class="hero-line hl-2"></div>
+      <div class="hero-line hl-3"></div>
+    </div>
+    <div class="hero-mask-top"></div>
+    <div class="hero-mask-bottom"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span>AUTONOMOUS RESEARCH AGENT</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="hero-title-main">MolCraft</span>
+        <span class="hero-rule"></span>
+        <span class="hero-title-sub">输入科学问题，AI 自主完成实验设计、数据分析、可视化与论文撰写</span>
+      </h1>
+      <div class="hero-search" id="hero-search">
+        <div class="hero-search-pill">
+          <svg class="hero-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/>
+          </svg>
+          <input type="text" id="hero-search-input" placeholder="输入你的研究目标或科学问题..." autocomplete="off" />
+          <button class="hero-search-btn" id="hero-search-btn" onclick="startFromHero()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 8h10M9 4l4 4-4 4"/>
+            </svg>
+          </button>
+        </div>
+        <p class="hero-search-hint">例如：分析近十年全球气温变化趋势并预测未来走向</p>
+      </div>
+    </div>
+
+    <div class="hero-edge hero-edge-right">
+      <span>zh</span><span class="hero-edge-div">—</span><span class="hero-edge-active">en</span>
+    </div>
+    <div class="hero-edge hero-edge-bl">2026 · v1.0</div>
+    <div class="hero-edge hero-edge-br">AI Research Platform</div>
+  </section>
+
+  <!-- Features Bento -->
+  <section class="landing-features" id="features">
+    <div class="features-header">
+      <span class="features-label">核心能力</span>
+      <h2 class="features-title">从假设到论文，<br/>全流程自主科研</h2>
+      <div class="features-sub">
+        <span class="sub-roller">
+          <span>六大核心引擎驱动你的科学发现之旅</span>
+          <span>从数据采集到论文撰写，全流程自动化</span>
+          <span>AI 自主设计实验、分析数据、验证假设</span>
+          <span>一键生成学术论文 .docx + .md 双格式</span>
+          <span aria-hidden="true">六大核心引擎驱动你的科学发现之旅</span>
+        </span>
+      </div>
+    </div>
+    <div class="features-bento">
+      <div class="bento-card bento-main" data-reveal>
+        <div class="bento-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.3" stroke-dasharray="5 5"/><circle cx="24" cy="24" r="10" stroke="currentColor" stroke-width="1.3"/><circle cx="24" cy="24" r="3.5" fill="currentColor"/></svg></div>
+        <h3>自主科研闭环</h3>
+        <p>假设提出 → 实验执行 → 数据分析 → 结论生成，Agent 自主完成多轮迭代，无需人工干预</p>
+      </div>
+      <div class="bento-card" data-reveal>
+        <div class="bento-icon"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="24" width="8" height="20" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="18" y="12" width="8" height="32" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="30" y="4" width="8" height="40" rx="1" stroke="currentColor" stroke-width="1.3"/></svg></div>
+        <h3>数据可视化</h3>
+        <p>折线图、柱状图、散点图、热力图 — 智能选择最佳图表类型</p>
+      </div>
+      <div class="bento-card" data-reveal>
+        <div class="bento-icon"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="8" width="36" height="32" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M6 16h36" stroke="currentColor" stroke-width="1.3"/><path d="M14 26h8M14 32h16" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+        <h3>论文自动撰写</h3>
+        <p>自动生成含标题、摘要、方法、结果的完整学术论文 .docx + .md</p>
+      </div>
+      <div class="bento-card" data-reveal>
+        <div class="bento-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="22" cy="22" r="18" stroke="currentColor" stroke-width="1.3"/><circle cx="28" cy="28" r="10" stroke="currentColor" stroke-width="1"/><path d="M6 6l10 10M40 40L32 32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <h3>文献检索</h3>
+        <p>联网搜索学术文献与数据集，支持深度调研模式，拓展研究视野</p>
+      </div>
+      <div class="bento-card" data-reveal>
+        <div class="bento-icon"><svg viewBox="0 0 48 48" fill="none"><rect x="6" y="6" width="36" height="36" rx="5" stroke="currentColor" stroke-width="1.3"/><path d="M16 22l6 6 12-14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Python 沙箱</h3>
+        <p>安全隔离执行代码，支持 numpy / pandas / matplotlib / scipy</p>
+      </div>
+      <div class="bento-card" data-reveal>
+        <div class="bento-icon"><svg viewBox="0 0 48 48" fill="none"><rect x="10" y="10" width="28" height="28" rx="4" stroke="currentColor" stroke-width="1.3"/><path d="M18 20h12M18 26h9M18 32h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+        <h3>会话管理</h3>
+        <p>多会话并行、断点恢复、完整追溯实验历程，永不断点</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process -->
+  <section class="landing-process" id="process">
+    <div class="features-header">
+      <span class="features-label">研究流程</span>
+      <h2 class="features-title">三步启动你的<br/>AI 科研之旅</h2>
+    </div>
+    <div class="process-steps">
+      <div class="process-card" data-reveal>
+        <div class="process-num">01</div>
+        <h3>输入研究目标</h3>
+        <p>描述你想探索的科学问题或假设，支持中英文自然语言输入</p>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-card" data-reveal>
+        <div class="process-num">02</div>
+        <h3>AI 自主实验</h3>
+        <p>Agent 自动编码、分析数据、绘制图表、记录结论，多轮迭代优化</p>
+      </div>
+      <div class="process-arrow">→</div>
+      <div class="process-card" data-reveal>
+        <div class="process-num">03</div>
+        <h3>输出论文报告</h3>
+        <p>一键生成 .docx + .md 双格式学术论文，图表数据完整呈现</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landing-cta" id="cta">
+    <div class="cta-card">
+      <h2 class="cta-title">准备好开始你的研究了吗？</h2>
+      <p class="cta-desc">配置 API 密钥，输入研究目标，让 AI 为你驱动科学发现</p>
+      <div class="cta-buttons">
+        <button class="cta-btn-primary" onclick="enterApp()">进入工作台 →</button>
+        <button class="cta-btn-ghost" onclick="showAuth('register')">注册账户</button>
+      </div>
+      <p class="cta-footnote">首次使用？注册后在设置页面配置 LLM API 连接</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg class="footer-logo" viewBox="0 0 48 48" fill="none"><polygon points="24,4 41.3,14 41.3,34 24,44 6.7,34 6.7,14" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="24" y1="4" x2="41.3" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="24" y1="4" x2="6.7" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="6.7" y1="14" x2="41.3" y2="14" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><circle cx="24" cy="24" r="3" fill="currentColor"/><circle cx="24" cy="10" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="18" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="24" cy="38" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="18" r="1.3" fill="currentColor" opacity="0.7"/></svg>
+        <span>MolCraft</span>
+      </div>
+      <div class="footer-links">
+        <span>AI 科研平台</span>
+        <span class="footer-dot">·</span>
+        <span>自主实验</span>
+        <span class="footer-dot">·</span>
+        <span>论文生成</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<div id="app" style="display:none;">
+
+<!-- ── Top Navigation Bar (auto-hide) ── -->
+<div id="top-nav-trigger"></div>
+<nav id="top-nav">
+  <div class="top-nav-inner">
+    <div class="top-nav-brand" onclick="navigateTo('dashboard')">
+      <svg class="top-nav-logo" viewBox="0 0 48 48" fill="none"><polygon points="24,4 41.3,14 41.3,34 24,44 6.7,34 6.7,14" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="24" y1="4" x2="41.3" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="24" y1="4" x2="6.7" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="6.7" y1="14" x2="41.3" y2="14" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><circle cx="24" cy="24" r="3" fill="currentColor"/><circle cx="24" cy="10" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="18" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="24" cy="38" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="18" r="1.3" fill="currentColor" opacity="0.7"/></svg>
+      <span>MolCraft</span>
+    </div>
+    <button class="top-nav-expand-conv" id="top-expand-conv" onclick="toggleConvPanel()" title="展开对话列表" style="display:none;">☰</button>
+    <div class="top-nav-links" id="top-nav-links">
+      <a class="top-nav-item active" data-page="studio" onclick="navigateTo('studio')">研究室</a>
+      <a class="top-nav-item" data-page="experiments" onclick="navigateTo('experiments')">实验记录<span class="top-nav-badge" id="exp-badge-top">0</span></a>
+      <a class="top-nav-item" data-page="charts" onclick="navigateTo('charts')">图表<span class="top-nav-badge" id="chart-badge-top">0</span></a>
+      <a class="top-nav-item" data-page="files" onclick="navigateTo('files')">文件<span class="top-nav-badge" id="file-badge-top">0</span></a>
+      <a class="top-nav-item" data-page="settings" onclick="navigateTo('settings')">设置</a>
+    </div>
+    <div class="top-nav-right">
+      <span class="top-nav-status" id="top-status-indicator">
+        <span class="status-dot idle" id="status-indicator"></span>
+        <span id="status-text">就绪</span>
+      </span>
+      <a class="top-nav-item" onclick="returnToLanding()" title="首页">⌂</a>
+      <a class="top-nav-item" onclick="logout()" title="登出">⏻</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Collapsible Conversation Panel ── -->
+<div id="conv-panel" class="conv-panel">
+  <div class="conv-panel-body">
+    <div class="conv-panel-header">
+      <span>对话</span>
+      <button class="conv-collapse-btn" onclick="toggleConvPanel()" title="收起对话列表">◀</button>
+    </div>
+    <button class="conv-new-big-btn" onclick="newConversation()">+ 新建对话</button>
+    <div id="conv-list" class="conv-list"></div>
+  </div>
+</div>
+
+<!-- ── Main Content ── -->
+<main id="main-content">
+
+<!-- Studio — DeepSeek-style Chat Interface -->
+<div class="page active" id="page-studio">
+<div class="chat-container" id="chat-container">
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-welcome">
+      <div class="chat-welcome-icon">
+        <svg viewBox="0 0 48 48" fill="none"><polygon points="24,4 41.3,14 41.3,34 24,44 6.7,34 6.7,14" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><line x1="24" y1="4" x2="41.3" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="24" y1="4" x2="6.7" y2="34" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><line x1="6.7" y1="14" x2="41.3" y2="14" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.5"/><circle cx="24" cy="24" r="3" fill="currentColor"/><circle cx="24" cy="10" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="18" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="38" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="24" cy="38" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="30" r="1.3" fill="currentColor" opacity="0.7"/><circle cx="10" cy="18" r="1.3" fill="currentColor" opacity="0.7"/></svg>
+      </div>
+      <div class="chat-welcome-title">MolCraft 科研助手</div>
+      <div class="chat-welcome-desc">输入你的研究目标，AI 将自主设计实验、分析数据、撰写论文</div>
+    </div>
+  </div>
+  <div class="chat-input-area" id="chat-input-area">
+    <div class="chat-input-row">
+      <div class="chat-options">
+        <label class="toggle-label"><input type="checkbox" id="write-paper-toggle" /><span class="toggle-slider"></span><span class="toggle-text">撰写论文</span></label>
+        <div class="chat-controls">
+          <label class="control-group"><span>迭代</span><input type="number" id="iterations-input" class="input-number" value="3" min="1" max="20" /></label>
+          <label class="control-group"><span>时长(分)</span><input type="number" id="minutes-input" class="input-number" value="90" min="5" max="480" /></label>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-box">
+      <button class="chat-upload-btn" onclick="document.getElementById('chat-file-input').click()" title="上传文件">+</button>
+      <input type="file" id="chat-file-input" multiple onchange="uploadChatFiles(this)" style="display:none" />
+      <textarea id="studio-goal" class="chat-textarea" rows="1" placeholder="输入研究目标..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();startAgent();}"></textarea>
+      <div class="chat-input-actions">
+        <button id="studio-start-btn" class="chat-send-btn" onclick="startAgent()" title="发送">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 10l16-8-4 16-3-5-5-3z"/></svg>
+        </button>
+        <button id="studio-stop-btn" class="chat-stop-btn" onclick="stopAgent()" style="display:none;" title="停止">
+          <svg viewBox="0 0 20 20" fill="currentColor"><rect x="4" y="4" width="12" height="12" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="page" id="page-experiments">
+<div class="page-header"><h1><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14h6M9 18h6"/></svg></span> 实验记录</h1><p class="page-desc">查看和管理所有实验历史</p><div class="header-actions">
+<button class="btn btn-secondary" onclick="exportExperiments()"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></span> 导出报告</button>
+<button class="btn btn-danger-outline" onclick="clearExperiments()"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg></span> 清空记录</button>
+</div></div>
+<div id="experiments-summary" class="summary-bar"></div>
+<div id="experiments-list" class="experiments-list"></div>
+</div>
+<div class="page" id="page-charts">
+<div class="page-header"><h1><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span> 图表</h1><p class="page-desc">实验生成的可视化图表</p></div>
+<div id="charts-grid" class="charts-grid"></div>
+</div>
+<div class="page" id="page-files">
+<div class="page-header"><h1><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"/></svg></span> 文件管理</h1><p class="page-desc">管理工作空间中的数据、脚本和论文</p><div class="header-actions">
+<label class="btn btn-primary upload-btn"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></span> 上传文件<input type="file" id="file-upload" multiple onchange="uploadFiles(this)" style="display:none" /></label>
+</div></div>
+<div id="drop-zone" class="drop-zone">
+  <div class="drop-zone-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"/></svg></div>
+  <div class="drop-zone-text">拖拽文件到此处上传</div>
+  <div class="drop-zone-hint">支持 CSV, JSON, PDF, PNG 等格式</div>
+</div>
+<div class="file-filter-bar">
+  <div class="file-filter-tabs" id="file-filter-tabs">
+    <button class="file-filter-tab active" data-cat="all"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"/></svg></span> 全部</button>
+    <button class="file-filter-tab" data-cat="data"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span> 数据</button>
+    <button class="file-filter-tab" data-cat="scripts"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></span> 脚本</button>
+    <button class="file-filter-tab" data-cat="papers"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></span> 论文</button>
+  </div>
+  <div class="file-search">
+    <input type="text" id="file-search-input" class="input-text" placeholder="搜索文件名..." oninput="renderFiles()" />
+  </div>
+</div>
+<div id="files-container" class="files-container"></div>
+</div>
+<div class="page" id="page-settings">
+<div class="page-header"><h1><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 01-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.6v.3a2 2 0 01-4 0v-.3a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 01-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.6-1H3a2 2 0 010-4h.3a1.7 1.7 0 001.6-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 012.8-2.8l.1.1a1.7 1.7 0 001.8.3 1.7 1.7 0 001-1.6V3a2 2 0 014 0v.3a1.7 1.7 0 001 1.6 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 012.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8 1.7 1.7 0 001.6 1H21a2 2 0 010 4h-.3a1.7 1.7 0 00-1.3.9z"/></svg></span> 设置</h1><p class="page-desc">配置 API 连接和应用参数</p></div>
+<div class="settings-form">
+<div class="settings-section"><h3><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v5M17 2v5M7 7h10a3 3 0 013 3v3a3 3 0 01-3 3h-1v4H8v-4H7a3 3 0 01-3-3v-3a3 3 0 013-3z"/><path d="M10 14h4"/></svg></span> API 配置</h3>
+<div class="form-group"><label>API Base URL</label>
+<div class="dropdown-input">
+  <input type="text" id="setting-base-url" class="input-text" placeholder="https://api.openai.com/v1" autocomplete="off" />
+  <span class="dropdown-arrow" onclick="toggleDropdown('url-dropdown')"><svg class="dd-caret" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></span>
+  <ul class="dropdown-list" id="url-dropdown">
+    <li data-value="https://api.openai.com/v1" onclick="selectDropdown('setting-base-url', this)">OpenAI 官方<span>api.openai.com</span></li>
+    <li data-value="https://api.siliconflow.cn/v1" onclick="selectDropdown('setting-base-url', this)">硅基流动 SiliconFlow<span>api.siliconflow.cn</span></li>
+    <li data-value="https://api.deepseek.com/v1" onclick="selectDropdown('setting-base-url', this)">DeepSeek 官方<span>api.deepseek.com</span></li>
+    <li data-value="https://dashscope.aliyuncs.com/compatible-mode/v1" onclick="selectDropdown('setting-base-url', this)">阿里百炼 DashScope<span>dashscope.aliyuncs.com</span></li>
+    <li data-value="https://api.moonshot.ai/v1" onclick="selectDropdown('setting-base-url', this)">月之暗面 Moonshot<span>api.moonshot.ai</span></li>
+    <li data-value="https://open.bigmodel.cn/api/paas/v4" onclick="selectDropdown('setting-base-url', this)">智谱 AI Zhipu<span>open.bigmodel.cn</span></li>
+  </ul>
+</div></div>
+<div class="form-group"><label>API Key <button type="button" id="toggle-api-key" style="font-size:11px;border:none;background:none;color:var(--accent);cursor:pointer;margin-left:8px;">显示</button></label><input type="text" id="setting-api-key" class="input-text" placeholder="sk-..." autocomplete="off" style="-webkit-text-security:disc;" /><input type="hidden" id="api-key-configured" value="0" /></div>
+<div class="form-group"><label>模型</label>
+<div class="dropdown-input">
+  <input type="text" id="setting-model" class="input-text" placeholder="gpt-4o" autocomplete="off" />
+  <span class="dropdown-arrow" onclick="toggleDropdown('model-dropdown')"><svg class="dd-caret" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></span>
+  <ul class="dropdown-list" id="model-dropdown"></ul>
+</div></div>
+<div class="form-group"><label>Temperature <span id="temp-value">0.3</span></label><input type="range" id="setting-temperature" class="input-range" min="0" max="1" step="0.05" value="0.3" /></div>
+</div>
+<div class="settings-section"><h3><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span> 模型价格参考</h3><p class="price-note">API 调用价格（¥ / 百万 Token），国外平台按汇率 1 USD ≈ 7.2 CNY 换算。数据截至 2026.06</p>
+<div class="price-table-wrap">
+<table class="price-table">
+<thead><tr><th>平台</th><th>模型</th><th class="col-price">输入</th><th class="col-price">缓存命中</th><th class="col-price">输出</th></tr></thead>
+<tbody>
+<tr><td rowspan="5">OpenAI</td><td>gpt-5.5</td><td class="col-price">¥36</td><td class="col-price">¥3.6</td><td class="col-price">¥216</td></tr>
+<tr><td>gpt-5.4-mini</td><td class="col-price">¥1.8</td><td class="col-price">—</td><td class="col-price">¥14.4</td></tr>
+<tr><td>gpt-4.1-mini</td><td class="col-price">¥2.9</td><td class="col-price">¥0.7</td><td class="col-price">¥11.5</td></tr>
+<tr><td>gpt-4o</td><td class="col-price">¥18</td><td class="col-price">—</td><td class="col-price">¥72</td></tr>
+<tr><td>o4-mini</td><td class="col-price">¥7.9</td><td class="col-price">¥2.0</td><td class="col-price">¥31.7</td></tr>
+<tr><td rowspan="3">DeepSeek</td><td>deepseek-v4-flash</td><td class="col-price">¥1</td><td class="col-price">¥0.02</td><td class="col-price">¥2</td></tr>
+<tr><td>deepseek-v4-pro</td><td class="col-price">¥3</td><td class="col-price">¥0.025</td><td class="col-price">¥6</td></tr>
+<tr><td>deepseek-chat / reasoner</td><td class="col-price">¥1</td><td class="col-price">¥0.02</td><td class="col-price">¥2</td></tr>
+<tr><td rowspan="3">阿里百炼</td><td>qwen3.7-max</td><td class="col-price">¥12</td><td class="col-price">—</td><td class="col-price">¥36</td></tr>
+<tr><td>qwen3.6-plus</td><td class="col-price">¥2</td><td class="col-price">—</td><td class="col-price">¥12</td></tr>
+<tr><td>qwen3.6-flash</td><td class="col-price">¥0.5</td><td class="col-price">—</td><td class="col-price">¥3</td></tr>
+<tr><td rowspan="2">Moonshot</td><td>kimi-k2.6</td><td class="col-price">¥6.5</td><td class="col-price">¥1.1</td><td class="col-price">¥27</td></tr>
+<tr><td>moonshot-v1-128k</td><td class="col-price">¥36</td><td class="col-price">—</td><td class="col-price">¥36</td></tr>
+<tr><td rowspan="3">智谱 GLM</td><td>glm-5.1</td><td class="col-price">¥10.1</td><td class="col-price">—</td><td class="col-price">¥31.7</td></tr>
+<tr><td>glm-4.7</td><td class="col-price">¥4.3</td><td class="col-price">—</td><td class="col-price">¥15.8</td></tr>
+<tr><td>glm-4-flash</td><td class="col-price">免费</td><td class="col-price">免费</td><td class="col-price">免费</td></tr>
+<tr><td rowspan="2">Claude</td><td>claude-sonnet-4-6</td><td class="col-price">¥21.6</td><td class="col-price">¥2.2</td><td class="col-price">¥108</td></tr>
+<tr><td>claude-opus-4.7</td><td class="col-price">¥36</td><td class="col-price">¥3.6</td><td class="col-price">¥180</td></tr>
+<tr><td>Google</td><td>gemini-2.5-flash</td><td class="col-price">¥2.2</td><td class="col-price">—</td><td class="col-price">¥18</td></tr>
+</tbody>
+</table>
+</div></div>
+<div class="settings-section"><h3><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 010 20"/><circle cx="8.5" cy="9" r="1.5" fill="currentColor" stroke="none"/><circle cx="15.5" cy="14" r="1.5" fill="currentColor" stroke="none"/><circle cx="16.5" cy="8" r="1" fill="currentColor" stroke="none"/></svg></span> 外观</h3><div class="form-group"><label>主题</label><div class="dropdown-input"><input type="text" id="setting-theme" class="input-text" value="Codex 暗色 (默认)" readonly autocomplete="off" /><span class="dropdown-arrow" onclick="toggleDropdown('theme-dropdown')"><svg class="dd-caret" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l4 4 4-4"/></svg></span><ul class="dropdown-list" id="theme-dropdown"><li data-value="codex" onclick="selectTheme(this)">Codex 暗色 (默认)</li><li data-value="clean" onclick="selectTheme(this)">极简白</li></ul></div></div></div>
+<div class="settings-section"><h3><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M9 3h6M12 3v5"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg></span> 系统提示词</h3><div class="form-group"><textarea id="setting-prompt" class="input-textarea" rows="8" placeholder="自定义 agent 系统提示词（可选）"></textarea></div></div>
+<div class="settings-actions">
+<button class="btn btn-primary" onclick="saveSettings()"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></span> 保存设置</button>
+<button class="btn btn-secondary" onclick="loadSettings()"><span class="svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.5 9A9 9 0 005.6 16M3.5 15A9 9 0 0018.4 8"/></svg></span> 刷新</button>
+</div>
+<div id="settings-status" class="settings-status"></div>
+</div></div>
+</main>
+</div>
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+<div class="modal-content" onclick="event.stopPropagation()"><button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button><div id="modal-body"></div></div>
+</div>
+<div id="toast-container"></div>
+<script>
+/* Hero search: clicking the search button navigates to studio with the query */
+function startFromHero() {
+  var input = document.getElementById('hero-search-input');
+  var query = input ? input.value.trim() : '';
+  if (!query) {
+    input && input.focus();
+    return;
+  }
+  // Check login first
+  var token = localStorage.getItem('access_token');
+  if (!token) {
+    showAuth('login');
+    return;
+  }
+  navigateTo('studio');
+  setTimeout(function() {
+    var studioGoal = document.getElementById('studio-goal');
+    if (studioGoal) studioGoal.value = query;
+  }, 400);
+}
+
+/* Hero search: Enter key triggers search */
+document.addEventListener('DOMContentLoaded', function() {
+  var input = document.getElementById('hero-search-input');
+  if (input) {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') startFromHero();
+    });
+  }
+});
+</script>
+<script src="/static/js/app.js?v=38"></script>
+</body>
+</html>

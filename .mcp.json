@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "headroom": {
+      "command": "D:\\agent-skills\\venv\\Scripts\\headroom.exe",
+      "args": ["mcp", "serve"]
+    }
+  }
+}

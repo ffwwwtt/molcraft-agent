@@ -1,0 +1,42 @@
+﻿[project]
+name = "molcraft-agent"
+version = "1.0.0"
+description = "MolCraft 科研智能体 —— 自主迭代实验、数据分析与可视化 Web 桌面应用"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=1.0",
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib>=3.8",
+    "python-docx>=1.0",
+    "python-dotenv>=1.0",
+    "requests",
+    "duckduckgo-search>=6.0",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+    "markitdown>=0.1",
+    "websockets>=12.0",
+    "Pillow",
+]
+
+[project.optional-dependencies]
+chemistry = [
+    "rdkit>=2024.0",
+    "vina>=1.2",
+    "meeko>=0.5",
+    "gemmi>=0.6",
+    "openbabel-wheel>=3.1",
+    "biopython",
+]
+
+[project.scripts]
+molcraft = "launcher:main"
+
+[tool.setuptools.packages.find]
+include = ["agent_core*", "server*"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
