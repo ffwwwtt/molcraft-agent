@@ -2771,6 +2771,24 @@ function initScrollAnimations() {
 
   // Refresh ScrollTrigger after all timelines created
   ScrollTrigger.refresh();
+
+  // Recalculate after fonts/images fully load (fixes layout shift)
+  window.addEventListener('load', function() {
+    setTimeout(function() { ScrollTrigger.refresh(); }, 500);
+  });
+
+  // Safety fallback: force-visible all cards if ScrollTrigger never fires
+  // (e.g. fonts blocked causing layout shift, or scroller height issue)
+  setTimeout(function() {
+    document.querySelectorAll('.bento-card, .process-card, .cta-card, .cta-buttons').forEach(function(el) {
+      var st = el.style;
+      if (st.opacity === '0' || getComputedStyle(el).opacity === '0') {
+        st.opacity = '1';
+        st.transform = 'none';
+        st.visibility = 'visible';
+      }
+    });
+  }, 4000);
 }
 
 function showLanding() {

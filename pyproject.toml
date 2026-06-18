@@ -1,4 +1,4 @@
-﻿[project]
+[project]
 name = "molcraft-agent"
 version = "1.0.0"
 description = "MolCraft 科研智能体 —— 自主迭代实验、数据分析与可视化 Web 桌面应用"

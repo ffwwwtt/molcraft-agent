@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 环境变量（包含密钥）
+.env
+
+# 输出结果
+output/*.csv
+output/*.log
+output/*.zip
+
+# 实验记录（运行时生成，不纳入版本控制）
+experiments.jsonl
+agent_run.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+result.zip
+AGENTS.md
+
+# Graphviz 源文件（只保留生成的 PNG）
+*.dot
+
+# Agent 运行时生成的文件
+data/
+workspace/
+ffmpeg.exe
+ffmpeg-master-latest-win64-gpl/
+installer/
+
+# 数据库文件（运行时数据）
+molcraft.db
+molcraft.db-shm
+*.db-journal
+*.db-wal
+
+# 本地数据目录
+.molcraft/
+workspace/.migrated
+
+# Claude Code 本地配置
+.claude/
+
+# 文档计划（本地开发用）
+docs/
